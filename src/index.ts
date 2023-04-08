@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 const port = process.env.PORT || 3000;
 
 app.get('/', (req : Request, res : Response) => {
-    res.send('Hello World!');
+    res.send('This is the root of the API for the modding website. DM me on discord if you have any questions. - Amenofisch#5368');
 });
 
 app.use('/api/mods', require('./routes/modsRoute'));

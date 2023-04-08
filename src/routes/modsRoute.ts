@@ -1,19 +1,20 @@
 import { Request, Response } from "express";
-import ModFromNexusType from "../types/ModFromNexusType";
-import ModType from "../types/ModType";
-import TagType from "../types/TagType";
-import NexusModsUser from "../types/NexusModsUser";
+const ModType = require('../types/ModType');
+const TagType = require('../types/TagType');
+const ModFromNexusType = require('../types/ModFromNexusType');
+const NexusModsUserType = require('../types/NexusModsUserType');
+const nexusmods = require('../controllers/nexusmods');
+const db = require('../config/db');
 
 const express = require('express');
 const router = express.Router();
 const slowDown = require("express-slow-down");
-const db = require('../config/db');
-const nexusmods = require('../controllers/nexusmods');
 
-var modsFromDb : ModType[] = [];
-var trendingModsFromNexus : ModFromNexusType[] = [];
-var tagsFromDb : TagType[] = [];
-var validatedUser : NexusModsUser;
+
+var modsFromDb : typeof ModType[] = [];
+var trendingModsFromNexus : typeof ModFromNexusType[] = [];
+var tagsFromDb : typeof TagType[] = [];
+var validatedUser : typeof NexusModsUserType;
 
 (async function () {
     try {
@@ -34,9 +35,9 @@ var validatedUser : NexusModsUser;
         // merge tags from db into mods
         modsFromDb.forEach(mod => {
             if(!mod.tags) return;
-            var dbtags : TagType[] = [];
+            var dbtags : typeof TagType[] = [];
 
-            mod.tags.forEach(tag => {
+            mod.tags.forEach((tag : typeof TagType) => {
                 var dbtag = tagsFromDb.find(dbtag => dbtag.id == tag);
                 if (dbtag) {
                     dbtags.push(dbtag);
@@ -60,11 +61,11 @@ var validatedUser : NexusModsUser;
         });
 
         // merge dependencies from db into mods
-        modsFromDb.forEach(mod => {
+        modsFromDb.forEach((mod : typeof ModType) => {
             if(!mod.depends_on) return;
 
-            var dependencies : ModType[] = [];
-            mod.depends_on.forEach(dependencyId => {
+            var dependencies : typeof ModType[] = [];
+            mod.depends_on.forEach((dependencyId : number) => {
                 var modDependency = modsFromDb.find(modDependency => modDependency.nexusmods_id == dependencyId);
                 if (modDependency) {
                     dependencies.push(modDependency);
@@ -78,6 +79,7 @@ var validatedUser : NexusModsUser;
         console.log(error);
     }
 })();
+
 
 // Rate limits
 const modsDbRateLimit = slowDown({
@@ -121,7 +123,7 @@ router.get('/:id', modsDbSpecificRateLimit, async (req : Request, res : Response
     // Enforce cache control for production
     if (process.env.NODE_ENV == 'production') res.setHeader('Cache-Control', 'max-age=900, must-revalidate');
 
-    let mod = modsFromDb.find(mod => mod.nexusmods_id.toString() == id);
+    let mod = modsFromDb.find((mod : typeof ModType) => mod.nexusmods_id.toString() == id);
     if(!mod) return res.status(404).send({
         'status': 404,
         'message': 'Mod not found.'
