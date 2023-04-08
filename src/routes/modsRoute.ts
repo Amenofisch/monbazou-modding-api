@@ -53,9 +53,6 @@ var validatedUser : typeof NexusModsUserType;
                 if (mod.nexusmods_id == trend.mod_id) {
                     mod.trending = true;
                     return;
-                } else {
-                    mod.trending = false;
-                    return;
                 }
             });
         });
