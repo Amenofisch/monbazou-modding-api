@@ -1,4 +1,4 @@
-const config = require('../../src/config/config.json');
+const config = require('../../src/config/config');
 const axios = require('axios');
 
 const getTrending = async () => {
