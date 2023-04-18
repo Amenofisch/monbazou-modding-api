@@ -1,15 +1,14 @@
-import { Request, Response } from "express";
 const ModType = require('../types/ModType');
 const TagType = require('../types/TagType');
 const ModFromNexusType = require('../types/ModFromNexusType');
 const NexusModsUserType = require('../types/NexusModsUserType');
 const nexusmods = require('../controllers/nexusmods');
+const { defaultRateLimit } = require('../config/ratelimits').default;
 const db = require('../config/db');
 
+import { Request, Response } from "express";
 const express = require('express');
 const router = express.Router();
-const slowDown = require("express-slow-down");
-
 
 var modsFromDb : typeof ModType[] = [];
 var trendingModsFromNexus : typeof ModFromNexusType[] = [];
@@ -78,23 +77,8 @@ var validatedUser : typeof NexusModsUserType;
 })();
 
 
-// Rate limits
-const modsDbRateLimit = slowDown({
-    windowMs: 60 * 1000,
-    delayAfter: 30,
-    delayMs: 250,
-    maxDelayMs: 5 * 1000
-});
-
-const modsDbSpecificRateLimit = slowDown({
-    windowMs: 60 * 1000,
-    delayAfter: 30,
-    delayMs: 500,
-    maxDelayMs: 5 * 1000
-});
-
 // Routes
-router.get('/', modsDbRateLimit, async (req : Request, res : Response) => {
+router.get('/', defaultRateLimit, async (req : Request, res : Response) => {
     // Enforce cache control for production
     if (process.env.NODE_ENV == 'production') res.setHeader('Cache-Control', 'max-age=900, must-revalidate');
 
@@ -106,7 +90,7 @@ router.get('/', modsDbRateLimit, async (req : Request, res : Response) => {
     res.send(modsFromDb);
 });
 
-router.get('/:id', modsDbSpecificRateLimit, async (req : Request, res : Response) => {
+router.get('/:id', defaultRateLimit, async (req : Request, res : Response) => {
     let id = req.params.id;
     if (!id) return res.status(400).send({
         'status': 400,
