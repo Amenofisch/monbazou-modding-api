@@ -9,7 +9,7 @@ app.use(cors());
 app.enable('trust proxy');
 app.use(express.urlencoded({ extended: true }));
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3003;
 
 app.get('/', (req : Request, res : Response) => {
     res.send('This is the root of the API for the modding website. DM me on discord if you have any questions. - Amenofisch#5368');
