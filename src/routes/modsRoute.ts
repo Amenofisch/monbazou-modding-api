@@ -4,7 +4,7 @@ const ModFromNexusType = require('../types/ModFromNexusType');
 const NexusModsUserType = require('../types/NexusModsUserType');
 const nexusmods = require('../controllers/nexusmods');
 const { defaultRateLimit } = require('../config/ratelimits').default;
-const db = require('../config/db');
+import prisma from '../config/db';
 
 import { Request, Response } from "express";
 const express = require('express');
@@ -24,9 +24,10 @@ var validatedUser : typeof NexusModsUserType;
             console.log('NexusMods API key validated.');
         }
 
-        modsFromDb = await db.execQuery('SELECT * FROM mods');
+        modsFromDb = await prisma.mods.findMany();
         trendingModsFromNexus = await nexusmods.getTrending();
-        tagsFromDb = await db.execQuery('SELECT * from tags');
+        tagsFromDb = await prisma.tags.findMany();
+
         console.log('Mods loaded. (' + modsFromDb.length + ' mods)');
         console.log('Trending loaded. (' + trendingModsFromNexus.length + ' trends)');
         console.log('Tags loaded. (' + tagsFromDb.length + ' tags)');
@@ -35,6 +36,8 @@ var validatedUser : typeof NexusModsUserType;
         modsFromDb.forEach(mod => {
             if(!mod.tags) return;
             var dbtags : typeof TagType[] = [];
+
+            mod.tags = JSON.parse(mod.tags);
 
             mod.tags.forEach((tag : typeof TagType) => {
                 var dbtag = tagsFromDb.find(dbtag => dbtag.id == tag);
@@ -59,6 +62,8 @@ var validatedUser : typeof NexusModsUserType;
         // merge dependencies from db into mods
         modsFromDb.forEach((mod : typeof ModType) => {
             if(!mod.depends_on) return;
+
+            mod.depends_on = JSON.parse(mod.depends_on);
 
             var dependencies : typeof ModType[] = [];
             mod.depends_on.forEach((dependencyId : number) => {

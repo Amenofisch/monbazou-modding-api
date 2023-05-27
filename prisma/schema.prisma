@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model mods {
+  id           Int     @id @default(autoincrement())
+  name         String  @db.VarChar(127)
+  description  String? @db.Text
+  image        String? @db.VarChar(255)
+  author       String  @db.VarChar(127)
+  nexusmods_id Int
+  tags         String? @db.LongText
+  depends_on   String? @db.LongText
+  uuid         String  @unique(map: "uuid") @default(dbgenerated("(uuid())")) @db.VarChar(127)
+
+  @@index([depends_on(length: 768)], map: "depends_on")
+  @@index([nexusmods_id], map: "nexusmods_id")
+  @@index([tags(length: 768)], map: "tags")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tags {
+  id    Int    @id @default(autoincrement())
+  text  String @db.VarChar(255)
+  color String @db.VarChar(255)
+  uuid  String @default(dbgenerated("(uuid())")) @db.VarChar(127)
+
+  @@index([id], map: "id")
+  @@index([uuid], map: "uuid")
+}
