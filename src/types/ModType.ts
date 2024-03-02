@@ -11,7 +11,6 @@ type ModType = {
     depends_on: ModType[] | Number[];
     dbtags?: TagType[];
     dbdependencies?: ModType[];
-    trending?: boolean;
     uuid: string;
 }
 
