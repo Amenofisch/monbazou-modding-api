@@ -1,8 +1,5 @@
 const ModType = require('../types/ModType');
 const TagType = require('../types/TagType');
-const ModFromNexusType = require('../types/ModFromNexusType');
-const NexusModsUserType = require('../types/NexusModsUserType');
-const nexusmods = require('../controllers/nexusmods');
 const { defaultRateLimit } = require('../config/ratelimits').default;
 import prisma from '../config/db';
 
@@ -11,25 +8,15 @@ const express = require('express');
 const router = express.Router();
 
 var modsFromDb : typeof ModType[] = [];
-var trendingModsFromNexus : typeof ModFromNexusType[] = [];
 var tagsFromDb : typeof TagType[] = [];
-var validatedUser : typeof NexusModsUserType;
 
 (async function () {
     try {
-        validatedUser = await nexusmods.validateApiKey();
-        if(!validatedUser.name && !validatedUser.user_id) {
-            throw new Error('Invalid API key. Please check your .env file. (NEXUSMODS_API_KEY)');
-        } else {
-            console.log('NexusMods API key validated.');
-        }
 
         modsFromDb = await prisma.mods.findMany();
-        trendingModsFromNexus = await nexusmods.getTrending();
         tagsFromDb = await prisma.tags.findMany();
 
         console.log('Mods loaded. (' + modsFromDb.length + ' mods)');
-        console.log('Trending loaded. (' + trendingModsFromNexus.length + ' trends)');
         console.log('Tags loaded. (' + tagsFromDb.length + ' tags)');
 
         // merge tags from db into mods
@@ -47,16 +34,6 @@ var validatedUser : typeof NexusModsUserType;
             });
 
             mod.tags = dbtags;
-        });
-    
-        // merge trending from nexus into mods
-        modsFromDb.forEach(mod => {
-            trendingModsFromNexus.forEach(trend => {
-                if (mod.nexusmods_id == trend.mod_id) {
-                    mod.trending = true;
-                    return;
-                }
-            });
         });
 
         // merge dependencies from db into mods
